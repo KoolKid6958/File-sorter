@@ -6,19 +6,19 @@ from tqdm import tqdm
 def main():
     # Prompt the user to select the action
     print("Select action:")
-    print("1. Sort files")
+    print("1. Sort files.")
     print("2. Create a list of files in a text file")
     print("3. Compare two folders")
     action_choice = input("Enter the number corresponding to your choice: ")
 
     # Validate the user's input
-    valid_choices = ['1', '2', '3']
+    valid_choices = ['1', '2', '3', '4']
     while action_choice not in valid_choices:
-        print("Invalid choice. Please enter either 1, 2, or 3.")
+        print("Invalid choice. Please enter either 1, 2, 3, 4")
         action_choice = input("Enter the number corresponding to your choice: ")
 
     # If user selects to sort files
-    if action_choice == '1':
+    if action_choice in ['1']:
         # Prompt the user to select the granularity
         print("\nSelect granularity for sorting:")
         print("1. Year")
@@ -111,8 +111,13 @@ def create_file_list(source_dir, output_file_path, show_path=True, add_comma=Fal
                 pbar.update(1)  # Increment progress bar
 
 
-def extract_date(file_path):
+def extract_date_modified(file_path):
     modification_time = os.path.getmtime(file_path)
+    modification_datetime = datetime.datetime.fromtimestamp(modification_time)
+    return modification_datetime
+
+def extract_date_creation(file_path):
+    modification_time = os.path.getctime(file_path)
     modification_datetime = datetime.datetime.fromtimestamp(modification_time)
     return modification_datetime
 
@@ -123,12 +128,26 @@ def sort_files(source_dir, destination_dir, granularity):
     # Count total number of files
     total_files = sum(len(files) for _, _, files in os.walk(source_dir))
 
+    while True:
+        print("1. Sort files on the day that they were created")
+        print("2. Sort files on the day that they were modfied")
+        MorC = input("What do you want to do")
+        if MorC in ['1', '2']:
+            break
+        else:
+            continue
+
     # Use tqdm to display a progress bar
     with tqdm(total=total_files, desc="Sorting Files", unit="files") as pbar:
         for root, dirs, files in os.walk(source_dir):
             for file in files:
                 file_path = os.path.join(root, file)
-                modification_datetime = extract_date(file_path)
+
+                if MorC == '1':
+                    modification_datetime = extract_date_creation(file_path)
+
+                if MorC == '2':
+                    modification_datetime = extract_date_modified(file_path)
 
                 # Extract the relevant time components based on selected granularity
                 if granularity == 'year':
